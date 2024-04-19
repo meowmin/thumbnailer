@@ -16,6 +16,7 @@
 #define HIST_SIZE 256
 #define HIST_CHANNELS 3
 #define MAX_FRAMES 10
+#define ROTATION_MATRIX_NONE (1 << 16)
 
 // Compute sum-square deviation to estimate "closeness"
 static double compute_error(const unsigned hist[HIST_SIZE][HIST_CHANNELS],
@@ -425,6 +426,41 @@ end:
     return err;
 }
 
+int extract_rotation_from_matrix(const int32_t* matrix) {
+    if (!matrix) return 0;
+
+    int32_t a = matrix[0];
+    int32_t b = matrix[1];
+    int32_t c = matrix[3];
+    int32_t d = matrix[4];
+
+    if (a == 0 && b == ROTATION_MATRIX_NONE && c == -ROTATION_MATRIX_NONE && d == 0)
+        return 90;
+    if (a == -ROTATION_MATRIX_NONE && b == 0 && c == 0 && d == -ROTATION_MATRIX_NONE)
+        return 180;
+    if (a == 0 && b == -ROTATION_MATRIX_NONE && c == ROTATION_MATRIX_NONE && d == 0)
+        return 270;
+
+    return 0;
+}
+
+int get_rotation(AVStream* video_stream) {
+    if (!video_stream || !video_stream->codecpar)
+        return 0;
+
+    AVCodecParameters* codecpar = video_stream->codecpar;
+
+    for (int i = 0; i < codecpar->nb_coded_side_data; ++i) {
+        AVPacketSideData* sd = &codecpar->coded_side_data[i];
+
+        if (sd->type == AV_PKT_DATA_DISPLAYMATRIX && sd->size >= 9 * sizeof(int32_t)) {
+            return extract_rotation_from_matrix((int32_t*)sd->data);
+        }
+    }
+
+    return 0; // No rotation detected or side data not found
+}
+
 int generate_thumbnail(struct Buffer* img, AVFormatContext* avfc,
     AVCodecContext* avcc, const int stream, const struct Dims thumb_dims)
 {
@@ -457,20 +493,20 @@ int generate_thumbnail(struct Buffer* img, AVFormatContext* avfc,
 end:
     if (size) {
         int orientation = 0;
-        AVDictionaryEntry* e
-            = av_dict_get(avfc->streams[stream]->metadata, "rotate", NULL, 0);
-        if (e) {
-            switch (atol(e->value)) {
-            case 90:
-                orientation = 6;
-                break;
-            case 180:
-                orientation = 3;
-                break;
-            case 270:
-                orientation = 8;
-                break;
-            }
+        int rotation = get_rotation(avfc->streams[stream]);
+
+        switch (rotation) {
+        case 90:
+            orientation = 6;
+            break;
+        case 180:
+            orientation = 3;
+            break;
+        case 270:
+            orientation = 8;
+            break;
+        default:
+            break;
         }
 
         // Ignore all read errors, if at least one frame read
