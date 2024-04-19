@@ -448,10 +448,8 @@ int get_rotation(AVStream* video_stream) {
     if (!video_stream || !video_stream->codecpar)
         return 0;
 
-    AVCodecParameters* codecpar = video_stream->codecpar;
-
-    for (int i = 0; i < codecpar->nb_coded_side_data; ++i) {
-        AVPacketSideData* sd = &codecpar->coded_side_data[i];
+    for (int i = 0; i < video_stream->nb_side_data; ++i) {
+        AVPacketSideData* sd = &video_stream->side_data[i];
 
         if (sd->type == AV_PKT_DATA_DISPLAYMATRIX && sd->size >= 9 * sizeof(int32_t)) {
             return extract_rotation_from_matrix((int32_t*)sd->data);
