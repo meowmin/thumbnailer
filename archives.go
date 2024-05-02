@@ -114,7 +114,7 @@ func couldBeImage(name string) bool {
 		return false
 	}
 	name = strings.ToLower(name[len(name)-4:])
-	for _, ext := range [...]string{".png", ".jpg", ".jpeg", ".webp"} {
+	for _, ext := range [...]string{".png", ".jpg", ".jpeg", ".webp", ".avif"} {
 		if strings.HasSuffix(name, ext) {
 			return true
 		}

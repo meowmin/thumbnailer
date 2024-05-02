@@ -105,6 +105,7 @@ func Process(rs io.ReadSeeker, opts Options) (
 			"image/png",
 			"image/gif",
 			"image/webp",
+			"image/avif",
 			"application/ogg",
 			"video/webm",
 			"video/x-matroska",
@@ -134,7 +135,8 @@ func Process(rs io.ReadSeeker, opts Options) (
 	case "image/jpeg",
 		"image/png",
 		"image/gif",
-		"image/webp":
+		"image/webp",
+		"image/avif":
 		// FFmpeg considers images to be video for processing reasons
 		src.HasVideo = false
 	}

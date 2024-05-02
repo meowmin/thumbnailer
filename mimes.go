@@ -25,6 +25,7 @@ var matchers = []Matcher{
 		[]byte("\xFF\xFF\xFF\xFF\x00\x00\x00\x00\xFF\xFF\xFF\xFF\xFF\xFF"),
 		[]byte("RIFF\x00\x00\x00\x00WEBPVP"),
 	},
+	&exactSig{"avif", "image/avif", []byte{0, 0, 0, 32, 102, 116, 121, 112, 97, 118, 105, 102}},
 	&maskedSig{
 		"ogg",
 		"application/ogg",

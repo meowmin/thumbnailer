@@ -38,6 +38,7 @@ var (
 		"image/png":        C.CString("image2"),
 		"image/gif":        C.CString("gif"),
 		"image/webp":       C.CString("webp"),
+		"image/avif":       C.CString("avif"),
 		"application/ogg":  C.CString("ogg"),
 		"video/webm":       C.CString("webm"),
 		"video/x-matroska": C.CString("matroska"),
