@@ -3,6 +3,7 @@ package thumbnailer
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"image"
 	"io"
 )
@@ -26,6 +27,7 @@ var matchers = []Matcher{
 		[]byte("RIFF\x00\x00\x00\x00WEBPVP"),
 	},
 	&exactSig{"avif", "image/avif", []byte{0, 0, 0, 32, 102, 116, 121, 112, 97, 118, 105, 102}},
+	&exactSig{"avif", "image/avif", []byte{0, 0, 0, 28, 102, 116, 121, 112, 97, 118, 105, 102}},
 	&maskedSig{
 		"ogg",
 		"application/ogg",
@@ -233,6 +235,12 @@ func DetectMIME(rs io.ReadSeeker, accepted map[string]bool,
 	if read < sniffSize {
 		buf = buf[:read]
 	}
+
+	for i := 0; i < 10; i++ {
+		fmt.Printf("%d ", buf[i])
+	}
+	buf2 := []byte{0, 0, 0, 32, 102, 116, 121, 112, 97, 118, 105, 102}
+	fmt.Printf("First 10 bytes: %x\n", buf2[:10])
 
 	for _, m := range matchers {
 		mime, ext = m.Match(buf)
